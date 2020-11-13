@@ -33,7 +33,7 @@ If ($TeamsStatus -like "*Setting the taskbar overlay icon - Available*" -or $Tea
     $Status = "Available"
     Write-Host $Status
 }
-ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Busy*" -or $TeamsStatus -like "*StatusIndicatorStateService: Added Busy*") {
+ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Busy*" -or $TeamsStatus -like "*StatusIndicatorStateService: Added Busy*" -or $TeamsStatus -like "*Setting the taskbar overlay icon - On the phone*") {
     $Status = "Busy"
     Write-Host $Status
 }
@@ -61,7 +61,7 @@ If ($TeamsActivity -like "*Resuming daemon App updates*") {
 }
 ElseIf ($TeamsActivity -like "*Pausing daemon App updates*") {
     $Activity = "In a call"
-    $ActivityIcon = "mdi:phone"
+    $ActivityIcon = "mdi:phone-in-talk-outline"
     Write-Host $Activity
 }
 
