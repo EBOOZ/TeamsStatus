@@ -46,9 +46,9 @@ sensor:
 * Restart Home Assistant to have the new sensors added
 * Download the files from this repository and save them to C:\Scripts
 * Edit the Get-TeamsStatus.ps1 script and:
-** Replace <Insert token> with the token you generated
-** Replace <UserName> with the username that is logged in to Teams and you want to monitor
-** Replace <HA URL> with the URL to your Home Assistant server
+  * Replace `<Insert token>` with the token you generated
+  * Replace `<UserName>` with the username that is logged in to Teams and you want to monitor
+  * Replace `<HA URL>` with the URL to your Home Assistant server
 * Start a elevated PowerShell prompt, browse to C:\Scripts and run the following command:
 ```powershell
 Unblock-File .\Get-TeamsStatus.ps1
