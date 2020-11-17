@@ -25,7 +25,7 @@ $Enable = 1
 $CurrentStatus = "Offline"
 DO {
 # Get Teams Logfile and last icon overlay status
-$TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern 'Setting the taskbar overlay icon - Available','Setting the taskbar overlay icon - Busy','Setting the taskbar overlay icon - Away','Setting the taskbar overlay icon - Do not disturb','Main window is closing','main window closed','Setting the taskbar overlay icon - On the phone','Setting the taskbar overlay icon - In a meeting','StatusIndicatorStateService: Added Busy','StatusIndicatorStateService: Added Available','StatusIndicatorStateService: Added InAMeeting','StatusIndicatorStateService: Added DoNotDisturb' | Select-Object -Last 1
+$TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern 'Setting the taskbar overlay icon - Available','Setting the taskbar overlay icon - Busy','Setting the taskbar overlay icon - Away','Setting the taskbar overlay icon - Do not disturb','Main window is closing','main window closed','Setting the taskbar overlay icon - On the phone','Setting the taskbar overlay icon - In a meeting','StatusIndicatorStateService: Added Busy','StatusIndicatorStateService: Added Available','StatusIndicatorStateService: Added InAMeeting','StatusIndicatorStateService: Added DoNotDisturb','Setting the taskbar overlay icon - Focusing','StatusIndicatorStateService: Added Focusing' | Select-Object -Last 1
 # Get Teams Logfile and last app update deamon status
 $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern 'Resuming daemon App updates','Pausing daemon App updates','SfB:TeamsNoCall','SfB:TeamsPendingCall','SfB:TeamsActiveCall' | Select-Object -Last 1
 
@@ -41,7 +41,7 @@ ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Away*" -or $Team
     $Status = "Away"
     Write-Host $Status
 }
-ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Do not disturb *" -or $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*") {
+ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Do not disturb *" -or $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*" -or $TeamsStatus -like "*Setting the taskbar overlay icon - Focusing*" -or $TeamsStatus -like "*StatusIndicatorStateService: Added Focusing*") {
     $Status = "Do not disturb"
     Write-Host $Status
 }
