@@ -26,19 +26,11 @@ $CurrentStatus = "Offline"
 DO {
 # Get Teams Logfile and last icon overlay status
 $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern `
-  'Setting the taskbar overlay icon - Available',`
-  'Setting the taskbar overlay icon - Busy',`
-  'Setting the taskbar overlay icon - Away',`
-  'Setting the taskbar overlay icon - Do not disturb',`
-  'Main window is closing','main window closed',`
-  'Setting the taskbar overlay icon - On the phone',`
-  'Setting the taskbar overlay icon - In a meeting',`
-  'StatusIndicatorStateService: Added Busy',`
-  'StatusIndicatorStateService: Added Available',`
-  'StatusIndicatorStateService: Added InAMeeting',`
-  'StatusIndicatorStateService: Added DoNotDisturb',`
-  'Setting the taskbar overlay icon - Focusing',`
-  'StatusIndicatorStateService: Added Focusing' | Select-Object -Last 1
+  'Setting the taskbar overlay icon -',`
+  'StatusIndicatorStateService: Added',`
+  'Main window is closing',`
+  'main window closed',`
+  | Select-Object -Last 1
 # Get Teams Logfile and last app update deamon status
 $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern `
   'Resuming daemon App updates',`
