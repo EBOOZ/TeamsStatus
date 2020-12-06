@@ -29,8 +29,7 @@ $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\T
   'Setting the taskbar overlay icon -',`
   'StatusIndicatorStateService: Added',`
   'Main window is closing',`
-  'main window closed',`
-  | Select-Object -Last 1
+  'main window closed' | Select-Object -Last 1
 # Get Teams Logfile and last app update deamon status
 $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern `
   'Resuming daemon App updates',`
