@@ -13,7 +13,15 @@ sensor.teams_status displays that availability status of your Teams client based
 on the icon overlay in the taskbar on Windows. sensor.teams_activity shows if you 
 are in a call or not based on the App updates deamon, which is paused as soon as 
 you join a call.
+.PARAMETER SetStatus
+Run the script with the SetStatus-parameter to set the status of Microsoft Teams
+directly from the commandline.
+.EXAMPLE
+.\Get-TeamsStatus.ps1 -SetStatus "Offline"
 #>
+# Configuring parameter for interactive run
+Param($SetStatus)
+
 # Configure the varaibles below that will be used in the script
 $HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
 $UserName = "<UserName>" # When not sure, open a command prompt and type: echo %USERNAME%
@@ -22,7 +30,22 @@ $HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
 # Don't edit the code below, unless you want to change the value language
 $headers = @{"Authorization"="Bearer $HAToken";}
 $Enable = 1
-$CurrentStatus = "Offline"
+
+# Run the script when a parameter is used and stop when done
+If($null -ne $SetStatus){
+    Write-Host ("Setting Microsoft Teams status to "+$SetStatus+":")
+    $params = @{
+     "state"="$SetStatus";
+     "attributes"= @{
+        "friendly_name"="Microsoft Teams status";
+        "icon"="mdi:microsoft-teams";
+        }
+     }
+    Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_status" -Method POST -Headers $headers -Body ($params|ConvertTo-Json) -ContentType "application/json"
+    break
+}
+
+# Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
 # Get Teams Logfile and last icon overlay status
 $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern `
