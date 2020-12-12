@@ -37,6 +37,10 @@ $lgOffline = "Offline"
 $lgNotInACall = "Not in a call"
 $lgInACall = "In a call"
 
+# Set icons to use for call activity
+$iconInACall = "mdi:phone-in-talk-outline"
+$iconNotInACall = "mdi:phone-off"
+
 ################################################################
 # Don't edit the code below, unless you know what you're doing #
 ################################################################
@@ -116,13 +120,13 @@ Else {
 If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
     $TeamsActivity -like "*SfB:TeamsNoCall*") {
     $Activity = $lgNotInACall
-    $ActivityIcon = "mdi:phone-off"
+    $ActivityIcon = $iconNotInACall
     Write-Host $Activity
 }
 ElseIf ($TeamsActivity -like "*Pausing daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsActiveCall*") {
     $Activity = $lgInACall
-    $ActivityIcon = "mdi:phone-in-talk-outline"
+    $ActivityIcon = $iconInACall
     Write-Host $Activity
 }
 
