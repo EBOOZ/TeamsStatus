@@ -27,7 +27,19 @@ $HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
 $UserName = "<UserName>" # When not sure, open a command prompt and type: echo %USERNAME%
 $HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
 
-# Don't edit the code below, unless you want to change the value language
+# Set language variables below
+$lgAvailable = "Available"
+$lgBusy = "Busy"
+$lgAway = "Away"
+$lgDoNotDisturb = "Do not disturb"
+$lgInAMeeting = "In a meeting"
+$lgOffline = "Offline"
+$lgNotInACall = "Not in a call"
+$lgInACall = "In a call"
+
+################################################################
+# Don't edit the code below, unless you know what you're doing #
+################################################################
 $headers = @{"Authorization"="Bearer $HAToken";}
 $Enable = 1
 
@@ -68,48 +80,48 @@ $TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 If ($null -ne $TeamsProcess) {
     If ($TeamsStatus -like "*Setting the taskbar overlay icon - Available*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added Available*") {
-        $Status = "Available"
+        $Status = $lgAvailable
         Write-Host $Status
     }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Busy*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added Busy*" -or `
             $TeamsStatus -like "*Setting the taskbar overlay icon - On the phone*") {
-        $Status = "Busy"
+        $Status = $lgBusy
         Write-Host $Status
     }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Away*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added Away*") {
-        $Status = "Away"
+        $Status = $lgAway
         Write-Host $Status
     }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Do not disturb *" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*" -or `
             $TeamsStatus -like "*Setting the taskbar overlay icon - Focusing*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added Focusing*") {
-        $Status = "Do not disturb"
+        $Status = $lgDoNotDisturb
         Write-Host $Status
     }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - In a meeting*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added InAMeeting*") {
-        $Status = "In a meeting"
+        $Status = $lgInAMeeting
         Write-Host $Status
     }
 }
 # Set status to Offline when the Teams application is not running
 Else {
-        $Status = "Offline"
+        $Status = $lgOffline
         Write-Host $Status
 }
 
 If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
     $TeamsActivity -like "*SfB:TeamsNoCall*") {
-    $Activity = "Not in a call"
+    $Activity = $lgNotInACall
     $ActivityIcon = "mdi:phone-off"
     Write-Host $Activity
 }
 ElseIf ($TeamsActivity -like "*Pausing daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsActiveCall*") {
-    $Activity = "In a call"
+    $Activity = $lgInACall
     $ActivityIcon = "mdi:phone-in-talk-outline"
     Write-Host $Activity
 }
