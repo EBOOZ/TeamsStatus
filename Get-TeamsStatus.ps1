@@ -22,7 +22,7 @@
 # Configuring parameter for interactive run
 Param($SetStatus)
 
-# Configure the varaibles below that will be used in the script
+# Configure the variables below that will be used in the script
 $HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
 $UserName = "<UserName>" # When not sure, open a command prompt and type: echo %USERNAME%
 $HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
@@ -61,8 +61,9 @@ If($null -ne $SetStatus){
     break
 }
 
-# Clear the status variable at the start
+# Clear the status and activity variable at the start
 $CurrentStatus = ""
+$CurrentActivity = ""
 
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
@@ -89,7 +90,8 @@ If ($null -ne $TeamsProcess) {
     }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Busy*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added Busy*" -or `
-            $TeamsStatus -like "*Setting the taskbar overlay icon - On the phone*") {
+            $TeamsStatus -like "*Setting the taskbar overlay icon - On the phone*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added OnThePhone*") {
         $Status = $lgBusy
         Write-Host $Status
     }
@@ -110,26 +112,30 @@ If ($null -ne $TeamsProcess) {
         $Status = $lgInAMeeting
         Write-Host $Status
     }
+
+    If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
+        $TeamsActivity -like "*SfB:TeamsNoCall*") {
+        $Activity = $lgNotInACall
+        $ActivityIcon = $iconNotInACall
+        Write-Host $Activity
+    }
+    ElseIf ($TeamsActivity -like "*Pausing daemon App updates*" -or `
+        $TeamsActivity -like "*SfB:TeamsActiveCall*") {
+        $Activity = $lgInACall
+        $ActivityIcon = $iconInACall
+        Write-Host $Activity
+    }
 }
 # Set status to Offline when the Teams application is not running
 Else {
         $Status = $lgOffline
+        $Activity = $lgNotInACall
+        $ActivityIcon = $iconNotInACall
         Write-Host $Status
+        Write-Host $Activity
 }
 
-If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
-    $TeamsActivity -like "*SfB:TeamsNoCall*") {
-    $Activity = $lgNotInACall
-    $ActivityIcon = $iconNotInACall
-    Write-Host $Activity
-}
-ElseIf ($TeamsActivity -like "*Pausing daemon App updates*" -or `
-        $TeamsActivity -like "*SfB:TeamsActiveCall*") {
-    $Activity = $lgInACall
-    $ActivityIcon = $iconInACall
-    Write-Host $Activity
-}
-
+# Call Home Assistant API to set the status and activity sensors
 If ($CurrentStatus -ne $Status) {
     $CurrentStatus = $Status
 
