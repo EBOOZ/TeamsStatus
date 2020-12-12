@@ -1,23 +1,23 @@
 ﻿<#
 .NOTES
-Name: Get-TeamsStatus.ps1
-Author: Danny de Vries
-Requires: PowerShell v2 or higher
-Version History: https://github.com/EBOOZ/TeamsStatus/commits/main
+    Name: Get-TeamsStatus.ps1
+    Author: Danny de Vries
+    Requires: PowerShell v2 or higher
+    Version History: https://github.com/EBOOZ/TeamsStatus/commits/main
 .SYNOPSIS
-Sets the status of the Microsoft Teams client to Home Assistant.
+    Sets the status of the Microsoft Teams client to Home Assistant.
 .DESCRIPTION
-This script is monitoring the Teams client logfile for certain changes. It
-makes use of two sensors that are created in Home Assistant up front.
-sensor.teams_status displays that availability status of your Teams client based 
-on the icon overlay in the taskbar on Windows. sensor.teams_activity shows if you 
-are in a call or not based on the App updates deamon, which is paused as soon as 
-you join a call.
+    This script is monitoring the Teams client logfile for certain changes. It
+    makes use of two sensors that are created in Home Assistant up front.
+    sensor.teams_status displays that availability status of your Teams client based 
+    on the icon overlay in the taskbar on Windows. sensor.teams_activity shows if you 
+    are in a call or not based on the App updates deamon, which is paused as soon as 
+    you join a call.
 .PARAMETER SetStatus
-Run the script with the SetStatus-parameter to set the status of Microsoft Teams
-directly from the commandline.
+    Run the script with the SetStatus-parameter to set the status of Microsoft Teams
+    directly from the commandline.
 .EXAMPLE
-.\Get-TeamsStatus.ps1 -SetStatus "Offline"
+    .\Get-TeamsStatus.ps1 -SetStatus "Offline"
 #>
 # Configuring parameter for interactive run
 Param($SetStatus)
@@ -45,14 +45,15 @@ If($null -ne $SetStatus){
     break
 }
 
+# Clear the status variable at the start
+$CurrentStatus = ""
+
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
 # Get Teams Logfile and last icon overlay status
 $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
-  'StatusIndicatorStateService: Added',`
-  'Main window is closing',`
-  'main window closed' | Select-Object -Last 1
+  'StatusIndicatorStateService: Added' | Select-Object -Last 1
 # Get Teams Logfile and last app update deamon status
 $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern `
   'Resuming daemon App updates',`
@@ -60,38 +61,44 @@ $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft
   'SfB:TeamsNoCall',`
   'SfB:TeamsPendingCall',`
   'SfB:TeamsActiveCall' | Select-Object -Last 1
+# Get Teams application process
+$TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 
-If ($TeamsStatus -like "*Setting the taskbar overlay icon - Available*" -or `
-    $TeamsStatus -like "*StatusIndicatorStateService: Added Available*") {
-    $Status = "Available"
-    Write-Host $Status
+# Check if Teams is running and start monitoring the log if it is
+If ($null -ne $TeamsProcess) {
+    If ($TeamsStatus -like "*Setting the taskbar overlay icon - Available*" -or `
+        $TeamsStatus -like "*StatusIndicatorStateService: Added Available*") {
+        $Status = "Available"
+        Write-Host $Status
+    }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Busy*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added Busy*" -or `
+            $TeamsStatus -like "*Setting the taskbar overlay icon - On the phone*") {
+        $Status = "Busy"
+        Write-Host $Status
+    }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Away*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added Away*") {
+        $Status = "Away"
+        Write-Host $Status
+    }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Do not disturb *" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*" -or `
+            $TeamsStatus -like "*Setting the taskbar overlay icon - Focusing*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added Focusing*") {
+        $Status = "Do not disturb"
+        Write-Host $Status
+    }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - In a meeting*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added InAMeeting*") {
+        $Status = "In a meeting"
+        Write-Host $Status
+    }
 }
-ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Busy*" -or `
-        $TeamsStatus -like "*StatusIndicatorStateService: Added Busy*" -or `
-        $TeamsStatus -like "*Setting the taskbar overlay icon - On the phone*") {
-    $Status = "Busy"
-    Write-Host $Status
-}
-ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Away*" -or `
-        $TeamsStatus -like "*StatusIndicatorStateService: Added Away*") {
-    $Status = "Away"
-    Write-Host $Status
-}
-ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Do not disturb *" -or `
-        $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*" -or `
-        $TeamsStatus -like "*Setting the taskbar overlay icon - Focusing*" -or `
-        $TeamsStatus -like "*StatusIndicatorStateService: Added Focusing*") {
-    $Status = "Do not disturb"
-    Write-Host $Status
-}
-ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - In a meeting*" -or `
-        $TeamsStatus -like "*StatusIndicatorStateService: Added InAMeeting*") {
-    $Status = "In a meeting"
-    Write-Host $Status
-}
-ElseIf ($TeamsStatus -like "*ain window*") {
-    $Status = "Offline"
-    Write-Host $Status
+# Set status to Offline when the Teams application is not running
+Else {
+        $Status = "Offline"
+        Write-Host $Status
 }
 
 If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
