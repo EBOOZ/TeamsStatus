@@ -51,6 +51,7 @@ sensor:
   * Replace `<HA URL>` with the URL to your Home Assistant server
 * Start a elevated PowerShell prompt, browse to C:\Scripts and run the following command:
 ```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 Unblock-File .\Get-TeamsStatus.ps1
 Start-Process -FilePath .\nssm.exe -ArgumentList 'install "Microsoft Teams Status Monitor" "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" "-command "& { . C:\Scripts\Get-TeamsStatus.ps1 }"" ' -NoNewWindow -Wait
 Start-Service -Name "Microsoft Teams Status Monitor"
