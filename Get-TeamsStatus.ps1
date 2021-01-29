@@ -58,7 +58,7 @@ If($null -ne $SetStatus){
         }
      }
 	 
-	$params = $params | ConvertTo-Json
+    $params = $params | ConvertTo-Json
     Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_status" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json"
 	
     break
@@ -150,7 +150,7 @@ If ($CurrentStatus -ne $Status) {
         }
      }
 	 
-	$params = $params | ConvertTo-Json
+    $params = $params | ConvertTo-Json
     Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_status" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
 }
 
@@ -164,7 +164,7 @@ If ($CurrentActivity -ne $Activity) {
         "icon"="$ActivityIcon";
         }
      }
-	$params = $params | ConvertTo-Json
+    $params = $params | ConvertTo-Json
     Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_activity" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
 }
     Start-Sleep 1
