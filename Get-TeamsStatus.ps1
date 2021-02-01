@@ -22,6 +22,17 @@
 # Configuring parameter for interactive run
 Param($SetStatus)
 
+# Functions
+function publishOnlineState ()
+{
+    $params = @{
+        "state"="online";
+        }
+        
+    $params = $params | ConvertTo-Json
+    Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_pc_status" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
+}
+
 # Configure the variables below that will be used in the script
 $HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
 $UserName = "<UserName>" # When not sure, open a command prompt and type: echo %USERNAME%
@@ -48,7 +59,7 @@ $headers = @{"Authorization"="Bearer $HAToken";}
 $Enable = 1
 
 # Run the script when a parameter is used and stop when done
-If($null -ne $SetStatus){
+If($SetStatus){
     Write-Host ("Setting Microsoft Teams status to "+$SetStatus+":")
     $params = @{
      "state"="$SetStatus";
@@ -67,9 +78,21 @@ If($null -ne $SetStatus){
 # Clear the status and activity variable at the start
 $CurrentStatus = ""
 $CurrentActivity = ""
+$stopwatch =  [system.diagnostics.stopwatch]::StartNew()
+
+# Set Teams PC online at Service startup
+publishOnlineState
 
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
+
+# Set Teams PC Online
+if ([int]$stopwatch.Elapsed.Minutes -ge 4)
+{
+    $stopwatch.Restart()
+    publishOnlineState
+}
+    
 # Get Teams Logfile and last icon overlay status
 $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 100 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
@@ -85,7 +108,7 @@ $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft
 $TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 
 # Check if Teams is running and start monitoring the log if it is
-If ($null -ne $TeamsProcess) {
+If ($TeamsProcess) {
     If ($TeamsStatus -like "*Setting the taskbar overlay icon - Available*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added Available*") {
         $Status = $lgAvailable
