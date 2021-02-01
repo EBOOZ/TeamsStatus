@@ -18,6 +18,17 @@ This solution is created to work with Home Assistant. It will work with any home
 sensor:
   - platform: template
     sensors:
+      teams_pc_status:
+        friendly_name: "Teams PC staus"
+        value_template: >-
+          {% set lastChange = as_timestamp(states.sensor.teams_pc_status.last_changed) %}
+          {% set now = as_timestamp(now()) %}
+          {% set noUpdateForMins = (now - lastChange) / 60 %}
+          {% if noUpdateForMins > 5 %}
+            offline
+          {% else %}
+            {{ states('sensor.teams_pc_status') }}
+          {% endif %}
       teams_status:
         friendly_name: "Microsoft Teams status"
         value_template: >-
