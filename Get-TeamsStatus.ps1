@@ -26,6 +26,13 @@ Param($SetStatus)
 function publishOnlineState ()
 {
     $params = @{
+        "state"="update";
+        }
+        
+    $params = $params | ConvertTo-Json
+    Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_pc_status" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
+
+    $params = @{
         "state"="online";
         }
         
