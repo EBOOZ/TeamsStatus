@@ -115,6 +115,11 @@ If ($null -ne $TeamsProcess) {
         $Status = $lgInAMeeting
         Write-Host $Status
     }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgOffline*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added Offline*") {
+        $Status = $lgOffline
+        Write-Host $Status
+    }
 
     If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsNoCall*") {
