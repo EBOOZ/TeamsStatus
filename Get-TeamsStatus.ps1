@@ -135,13 +135,16 @@ If ($null -ne $TeamsProcess) {
     }
 
     If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
-        $TeamsActivity -like "*SfB:TeamsNoCall*") {
+        $TeamsActivity -like "*SfB:TeamsNoCall*" -or `
+        $TeamsStatus -like "*current state: OnThePhone -> *") {
         $Activity = $lgNotInACall
         $ActivityIcon = $iconNotInACall
         Write-Host $Activity
     }
     ElseIf ($TeamsActivity -like "*Pausing daemon App updates*" -or `
-        $TeamsActivity -like "*SfB:TeamsActiveCall*") {
+        $TeamsActivity -like "*SfB:TeamsActiveCall*" -or `
+        $TeamsStatus -like "*Setting the taskbar overlay icon - $lgOnThePhone*" -or `
+        $TeamsStatus -like "*StatusIndicatorStateService: Added OnThePhone*") {
         $Activity = $lgInACall
         $ActivityIcon = $iconInACall
         Write-Host $Activity
