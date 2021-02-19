@@ -31,9 +31,11 @@ $HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
 # Set language variables below
 $lgAvailable = "Available"
 $lgBusy = "Busy"
+$lgOnThePhone = "On the phone"
 $lgAway = "Away"
 $lgBeRightBack = "Be right back"
 $lgDoNotDisturb = "Do not disturb"
+$lgFocusing = "Focusing"
 $lgInAMeeting = "In a meeting"
 $lgOffline = "Offline"
 $lgNotInACall = "Not in a call"
@@ -92,19 +94,19 @@ $TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 
 # Check if Teams is running and start monitoring the log if it is
 If ($null -ne $TeamsProcess) {
-    If ($TeamsStatus -like "*Setting the taskbar overlay icon - Available*" -or `
+    If ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgAvailable*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added Available*") {
         $Status = $lgAvailable
         Write-Host $Status
     }
-    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Busy*" -or `
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgBusy*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added Busy*" -or `
-            $TeamsStatus -like "*Setting the taskbar overlay icon - On the phone*" -or `
+            $TeamsStatus -like "*Setting the taskbar overlay icon - $lgOnThePhone*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added OnThePhone*") {
         $Status = $lgBusy
         Write-Host $Status
     }
-    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Away*" -or `
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgAway*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added Away*") {
         $Status = $lgAway
         Write-Host $Status
@@ -114,14 +116,14 @@ If ($null -ne $TeamsProcess) {
         $Status = $lgBeRightBack
         Write-Host $Status
     }
-    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Do not disturb *" -or `
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgDoNotDisturb *" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*" -or `
-            $TeamsStatus -like "*Setting the taskbar overlay icon - Focusing*" -or `
+            $TeamsStatus -like "*Setting the taskbar overlay icon - $lgFocusing*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added Focusing*") {
         $Status = $lgDoNotDisturb
         Write-Host $Status
     }
-    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - In a meeting*" -or `
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgInAMeeting*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added InAMeeting*") {
         $Status = $lgInAMeeting
         Write-Host $Status
