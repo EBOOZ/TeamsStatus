@@ -32,6 +32,7 @@ $HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
 $lgAvailable = "Available"
 $lgBusy = "Busy"
 $lgAway = "Away"
+$lgBeRightBack = "Be right back"
 $lgDoNotDisturb = "Do not disturb"
 $lgInAMeeting = "In a meeting"
 $lgOffline = "Offline"
@@ -108,6 +109,11 @@ If ($null -ne $TeamsProcess) {
         $Status = $lgAway
         Write-Host $Status
     }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgBeRightBack*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added BeRightBack*") {
+        $Status = $lgBeRightBack
+        Write-Host $Status
+    }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - Do not disturb *" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*" -or `
             $TeamsStatus -like "*Setting the taskbar overlay icon - Focusing*" -or `
@@ -118,6 +124,11 @@ If ($null -ne $TeamsProcess) {
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - In a meeting*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added InAMeeting*") {
         $Status = $lgInAMeeting
+        Write-Host $Status
+    }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgOffline*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added Offline*") {
+        $Status = $lgOffline
         Write-Host $Status
     }
 
