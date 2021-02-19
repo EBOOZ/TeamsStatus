@@ -9,8 +9,9 @@
 .DESCRIPTION
     This script is monitoring the Teams client logfile for certain changes. It
     makes use of two sensors that are created in Home Assistant up front.
-    sensor.teams_status displays that availability status of your Teams client based 
-    on the icon overlay in the taskbar on Windows. sensor.teams_activity shows if you 
+    The status entity (sensor.teams_status by default) displays that availability 
+    status of your Teams client based on the icon overlay in the taskbar on Windows. 
+    The activity entity (sensor.teams_activity by default) shows if you
     are in a call or not based on the App updates deamon, which is paused as soon as 
     you join a call.
 .PARAMETER SetStatus
@@ -32,6 +33,7 @@ $lgAvailable = "Available"
 $lgBusy = "Busy"
 $lgOnThePhone = "On the phone"
 $lgAway = "Away"
+$lgBeRightBack = "Be right back"
 $lgDoNotDisturb = "Do not disturb"
 $lgFocusing = "Focusing"
 $lgInAMeeting = "In a meeting"
@@ -42,6 +44,10 @@ $lgInACall = "In a call"
 # Set icons to use for call activity
 $iconInACall = "mdi:phone-in-talk-outline"
 $iconNotInACall = "mdi:phone-off"
+
+# Set entities to post to
+$entityStatus = "sensor.teams_status"
+$entityActivity = "sensor.teams_activity"
 
 ################################################################
 # Don't edit the code below, unless you know what you're doing #
@@ -61,7 +67,7 @@ If($null -ne $SetStatus){
      }
 	 
     $params = $params | ConvertTo-Json
-    Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_status" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json"
+    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityStatus" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json"
 	
     break
 }
@@ -105,6 +111,11 @@ If ($null -ne $TeamsProcess) {
         $Status = $lgAway
         Write-Host $Status
     }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgBeRightBack*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added BeRightBack*") {
+        $Status = $lgBeRightBack
+        Write-Host $Status
+    }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgDoNotDisturb *" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*" -or `
             $TeamsStatus -like "*Setting the taskbar overlay icon - $lgFocusing*" -or `
@@ -115,6 +126,11 @@ If ($null -ne $TeamsProcess) {
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgInAMeeting*" -or `
             $TeamsStatus -like "*StatusIndicatorStateService: Added InAMeeting*") {
         $Status = $lgInAMeeting
+        Write-Host $Status
+    }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgOffline*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added Offline*") {
+        $Status = $lgOffline
         Write-Host $Status
     }
 
@@ -153,7 +169,7 @@ If ($CurrentStatus -ne $Status) {
      }
 	 
     $params = $params | ConvertTo-Json
-    Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_status" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
+    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityStatus" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
 }
 
 If ($CurrentActivity -ne $Activity) {
@@ -167,7 +183,7 @@ If ($CurrentActivity -ne $Activity) {
         }
      }
     $params = $params | ConvertTo-Json
-    Invoke-RestMethod -Uri "$HAUrl/api/states/sensor.teams_activity" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
+    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityActivity" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
 }
     Start-Sleep 1
 } Until ($Enable -eq 0)
