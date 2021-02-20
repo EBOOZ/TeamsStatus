@@ -78,9 +78,10 @@ If($null -ne $SetStatus){
 Function publishOnlineState ()
 {
     $params = @{
-        "state"="on";
+        "state"="updating";
         "attributes"= @{
            "friendly_name"="Microsoft Teams monitoring";
+           "icon"="$iconMonitoring";
            "device_class"="connectivity";
            }
         }
