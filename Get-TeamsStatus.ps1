@@ -44,10 +44,12 @@ $lgInACall = "In a call"
 # Set icons to use for call activity
 $iconInACall = "mdi:phone-in-talk-outline"
 $iconNotInACall = "mdi:phone-off"
+$iconMonitoring = "mdi:api"
 
 # Set entities to post to
 $entityStatus = "sensor.teams_status"
 $entityActivity = "sensor.teams_activity"
+$entityHeartbeat = "binary_sensor.teams_monitoring"
 
 ################################################################
 # Don't edit the code below, unless you know what you're doing #
@@ -72,12 +74,50 @@ If($null -ne $SetStatus){
     break
 }
 
+# Create function that will be used to set the status of the Windows Service
+Function publishOnlineState ()
+{
+    $params = @{
+        "state"="on";
+        "attributes"= @{
+           "friendly_name"="Microsoft Teams monitoring";
+           "device_class"="connectivity";
+           }
+        }
+   
+    $params = $params | ConvertTo-Json
+    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityHeartbeat" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
+
+    $params = @{
+        "state"="on";
+        "attributes"= @{
+           "friendly_name"="Microsoft Teams monitoring";
+           "icon"="$iconMonitoring";
+           "device_class"="connectivity";
+           }
+        }
+   
+    $params = $params | ConvertTo-Json
+    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityHeartbeat" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
+}
+
 # Clear the status and activity variable at the start
 $CurrentStatus = ""
 $CurrentActivity = ""
 
+# Start the stopwatch that will be monitoring the status of the Windows Service
+$stopwatch =  [system.diagnostics.stopwatch]::StartNew()
+# Set the Windows Service heartbeat sensor at startup
+publishOnlineState
+
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
+# Set the Windows Service heartbeat sensor every 2 minutes and restart the stopwatch
+If ([int]$stopwatch.Elapsed.Minutes -ge 4){
+    $stopwatch.Restart()
+    publishOnlineState
+}
+
 # Get Teams Logfile and last icon overlay status
 $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 200 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`

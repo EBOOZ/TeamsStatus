@@ -3,9 +3,10 @@ We're working a lot at our home office these days. Several people already found 
 
 Microsoft provides the status of your account that is used in Teams via the Graph API. To access the Graph API, your organization needs to grant consent for the organization so everybody can read their Teams status. Since my organization didn't want to grant consent, I needed to find a workaround, which I found in monitoring the Teams client logfile for certain changes.
 
-This script makes use of two sensors that are created in Home Assistant up front:
+This script makes use of three sensors that are created in Home Assistant up front:
 * sensor.teams_status
 * sensor.teams_activity
+* binary_sensor.teams_monitoring
 
 sensor.teams_status displays that availability status of your Teams client based on the icon overlay in the taskbar on Windows. sensor.teams_activity shows if you are in a call or not based on the App updates deamon, which is paused as soon as you join a call.
 
@@ -13,33 +14,58 @@ sensor.teams_status displays that availability status of your Teams client based
 This solution is created to work with Home Assistant. It will work with any home automation platform that provides an API, but you probably need to change the PowerShell code.
 
 # Requirements
-* Create the two Teams sensors in the Home Assistant configuration.yaml file
+* Create the three Teams sensors in the Home Assistant configuration.yaml file
 ```yaml
 sensor:
   - platform: template
     sensors:
-      teams_status:
+      teams_status: 
         friendly_name: "Microsoft Teams status"
         value_template: >-
-          {% if states('sensor.teams_status') == '' -%}
-            Offline
-          {%- endif %}
+            {% if is_state("binary_sensor.teams_monitoring", "off") -%}
+              Offline
+            {% else %}
+              {{ states('sensor.teams_status') }}
+            {% endif %}
         icon_template: >-
-          {% if states('sensor.teams_status') == '' -%}
+          {% if is_state("binary_sensor.teams_monitoring", "off") %}
             mdi:microsoft-teams
-          {%- endif %}
+          {% endif %}
         unique_id: sensor.teams_status
       teams_activity:
         friendly_name: "Microsoft Teams activity"
         value_template: >-
-          {% if states('sensor.teams_activity') == '' -%}
-            Offline
-          {%- endif %}
+            {% if is_state("binary_sensor.teams_monitoring", "off") -%}
+              Niet in gesprek
+            {% else %}
+              {{ states('sensor.teams_activity') }}
+            {% endif %}
         icon_template: >-
-          {% if states('sensor.teams_activity') == '' -%}
-            mdi:microsoft-teams
-          {%- endif %}
+          {% if is_state("binary_sensor.teams_monitoring", "off") %}
+            mdi:phone-off
+          {% endif %}
         unique_id: sensor.teams_activity
+
+binary_sensor:
+  - platform: template
+    sensors:
+      teams_monitoring:
+        friendly_name: "Microsoft Teams monitoring"
+        device_class: connectivity
+        value_template: >-
+          {% set lastChange = as_timestamp(states.binary_sensor.teams_monitoring.last_changed) %}
+          {% set now = as_timestamp(now()) %}
+          {% set noUpdateForMins = (now - lastChange) / 60 %}
+          {% if noUpdateForMins > 5 %}
+            off
+          {% else %}
+            {{ states('binary_sensor.teams_monitoring') }}
+          {% endif %}
+        icon_template: >-
+          {% if is_state("binary_sensor.teams_monitoring", "off") %}
+            mdi:api-off
+          {% endif %}
+        unique_id: binary_sensor.teams_monitoring
 ```
 * Generate a Long-lived access token ([see HA documentation](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token))
 * Copy and temporarily save the token somewhere you can find it later
