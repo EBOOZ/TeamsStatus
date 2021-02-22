@@ -16,34 +16,28 @@ This solution is created to work with Home Assistant. It will work with any home
 # Requirements
 * Create the three Teams sensors in the Home Assistant configuration.yaml file
 ```yaml
+input_text:
+  teams_status:
+    name: Microsoft Teams status
+    icon: mdi:microsoft-teams
+  teams_activity:
+    name: Microsoft Teams activity
+    icon: mdi:phone-off
+  teams_monitoring:
+    name: Microsoft Teams monitoring
+    icon: mdi:api
+
 sensor:
   - platform: template
     sensors:
       teams_status: 
         friendly_name: "Microsoft Teams status"
-        value_template: >-
-            {% if is_state("binary_sensor.teams_monitoring", "off") -%}
-              Offline
-            {% else %}
-              {{ states('sensor.teams_status') }}
-            {% endif %}
-        icon_template: >-
-          {% if is_state("binary_sensor.teams_monitoring", "off") %}
-            mdi:microsoft-teams
-          {% endif %}
+        value_template: "{{states('input_text.teams_status')}}"
+        icon_template: "{{state_attr('input_text.teams_status','icon')}}"
         unique_id: sensor.teams_status
       teams_activity:
-        friendly_name: "Microsoft Teams activity"
-        value_template: >-
-            {% if is_state("binary_sensor.teams_monitoring", "off") -%}
-              Niet in gesprek
-            {% else %}
-              {{ states('sensor.teams_activity') }}
-            {% endif %}
-        icon_template: >-
-          {% if is_state("binary_sensor.teams_monitoring", "off") %}
-            mdi:phone-off
-          {% endif %}
+        friendly_name: "Microsoft Teams activiteit"
+        value_template: "{{states('input_text.teams_activity')}}"
         unique_id: sensor.teams_activity
 
 binary_sensor:
@@ -59,12 +53,9 @@ binary_sensor:
           {% if noUpdateForMins > 5 %}
             off
           {% else %}
-            {{ states('binary_sensor.teams_monitoring') }}
+            {{states('input_text.teams_monitoring')}}
           {% endif %}
-        icon_template: >-
-          {% if is_state("binary_sensor.teams_monitoring", "off") %}
-            mdi:api-off
-          {% endif %}
+        icon_template: "{{state_attr('input_text.teams_monitoring','icon')}}"
         unique_id: binary_sensor.teams_monitoring
 ```
 * Generate a Long-lived access token ([see HA documentation](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token))
