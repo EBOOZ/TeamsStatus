@@ -38,7 +38,7 @@ If($null -ne $SetStatus){
     $params = @{
      "state"="$SetStatus";
      "attributes"= @{
-        "friendly_name"="Microsoft Teams status";
+        "friendly_name"="$entityStatusName";
         "icon"="mdi:microsoft-teams";
         }
      }
@@ -55,7 +55,7 @@ Function publishOnlineState ()
     $params = @{
         "state"="updating";
         "attributes"= @{
-           "friendly_name"="Microsoft Teams monitoring";
+           "friendly_name"="$entityHeartbeatName";
            "icon"="$iconMonitoring";
            "device_class"="connectivity";
            }
@@ -67,7 +67,7 @@ Function publishOnlineState ()
     $params = @{
         "state"="on";
         "attributes"= @{
-           "friendly_name"="Microsoft Teams monitoring";
+           "friendly_name"="$entityHeartbeatName";
            "icon"="$iconMonitoring";
            "device_class"="connectivity";
            }
@@ -88,7 +88,7 @@ publishOnlineState
 
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
-# Set the Windows Service heartbeat sensor every 2 minutes and restart the stopwatch
+# Set the Windows Service heartbeat sensor every 5 minutes and restart the stopwatch
 If ([int]$stopwatch.Elapsed.Minutes -ge 4){
     $stopwatch.Restart()
     publishOnlineState
@@ -98,13 +98,16 @@ If ([int]$stopwatch.Elapsed.Minutes -ge 4){
 $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 200 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
   'StatusIndicatorStateService: Added' | Select-Object -Last 1
+Write-Host $TeamsStatus
 # Get Teams Logfile and last app update deamon status
 $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 200 | Select-String -Pattern `
   'Resuming daemon App updates',`
   'Pausing daemon App updates',`
   'SfB:TeamsNoCall',`
   'SfB:TeamsPendingCall',`
-  'SfB:TeamsActiveCall' | Select-Object -Last 1
+  'SfB:TeamsActiveCall',`
+  'StatusIndicatorStateService: Added' | Select-Object -Last 1
+Write-Host $TeamsActivity
 # Get Teams application process
 $TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 
@@ -133,10 +136,18 @@ If ($null -ne $TeamsProcess) {
         Write-Host $Status
     }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgDoNotDisturb *" -or `
-            $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*" -or `
-            $TeamsStatus -like "*Setting the taskbar overlay icon - $lgFocusing*" -or `
-            $TeamsStatus -like "*StatusIndicatorStateService: Added Focusing*") {
+            $TeamsStatus -like "*StatusIndicatorStateService: Added DoNotDisturb*") {
         $Status = $lgDoNotDisturb
+        Write-Host $Status
+    }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgFocusing*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added Focusing*") {
+        $Status = $lgFocusing
+        Write-Host $Status
+    }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgPresenting*" -or `
+            $TeamsStatus -like "*StatusIndicatorStateService: Added Presenting*") {
+        $Status = $lgPresenting
         Write-Host $Status
     }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgInAMeeting*" -or `
@@ -152,15 +163,25 @@ If ($null -ne $TeamsProcess) {
 
     If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsNoCall*" -or `
-        $TeamsStatus -like "*current state: OnThePhone -> *") {
+        $TeamsActivity -like "*OnThePhone -> $lgAvailable*"-or `
+        $TeamsActivity -like "*OnThePhone -> $lgBusy*"-or `
+        $TeamsActivity -like "*OnThePhone -> $lgInAMeeting*"-or `
+        $TeamsActivity -like "*OnThePhone -> $lgFocusing*"-or `
+        $TeamsActivity -like "*OnThePhone -> $lgDoNotDisturb*" -or `
+        $TeamsActivity -like "*OnThePhone -> Available*"-or `
+        $TeamsActivity -like "*OnThePhone -> Busy*"-or `
+        $TeamsActivity -like "*OnThePhone -> InAMeeting*"-or `
+        $TeamsActivity -like "*OnThePhone -> Focusing*"-or `
+        $TeamsActivity -like "*OnThePhone -> DoNotDisturb*") {
         $Activity = $lgNotInACall
         $ActivityIcon = $iconNotInACall
         Write-Host $Activity
     }
     ElseIf ($TeamsActivity -like "*Pausing daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsActiveCall*" -or `
-        $TeamsStatus -like "*Setting the taskbar overlay icon - $lgOnThePhone*" -or `
-        $TeamsStatus -like "*StatusIndicatorStateService: Added OnThePhone*") {
+        $TeamsActivity -like "*Setting the taskbar overlay icon - $lgOnThePhone*" -or `
+        $TeamsActivity -like "*StatusIndicatorStateService: Added OnThePhone*" -or `
+        $TeamsActivity -like "*-> OnThePhone*") {
         $Activity = $lgInACall
         $ActivityIcon = $iconInACall
         Write-Host $Activity
@@ -182,7 +203,7 @@ If ($CurrentStatus -ne $Status) {
     $params = @{
      "state"="$CurrentStatus";
      "attributes"= @{
-        "friendly_name"="Microsoft Teams status";
+        "friendly_name"="$entityStatusName";
         "icon"="mdi:microsoft-teams";
         }
      }
@@ -197,7 +218,7 @@ If ($CurrentActivity -ne $Activity) {
     $params = @{
      "state"="$Activity";
      "attributes"= @{
-        "friendly_name"="Microsoft Teams activity";
+        "friendly_name"="$entityActivityName";
         "icon"="$ActivityIcon";
         }
      }
