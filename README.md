@@ -32,7 +32,7 @@ sensor:
         icon_template: "{{state_attr('input_text.teams_status','icon')}}"
         unique_id: sensor.teams_status
       teams_activity:
-        friendly_name: "Microsoft Teams activiteit"
+        friendly_name: "Microsoft Teams activity"
         value_template: "{{states('input_text.teams_activity')}}"
         unique_id: sensor.teams_activity
 
