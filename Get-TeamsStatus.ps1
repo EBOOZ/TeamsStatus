@@ -26,9 +26,6 @@ Param($SetStatus)
 # Import Settings PowerShell script
 . ($PSScriptRoot + "\Settings.ps1")
 
-################################################################
-# Don't edit the code below, unless you know what you're doing #
-################################################################
 $headers = @{"Authorization"="Bearer $HAToken";}
 $Enable = 1
 
@@ -45,54 +42,15 @@ If($null -ne $SetStatus){
 	 
     $params = $params | ConvertTo-Json
     Invoke-RestMethod -Uri "$HAUrl/api/states/$entityStatus" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json"
-	
     break
 }
 
-# Create function that will be used to set the status of the Windows Service
-Function publishOnlineState ()
-{
-    $params = @{
-        "state"="updating";
-        "attributes"= @{
-           "friendly_name"="$entityHeartbeatName";
-           "icon"="$iconMonitoring";
-           "device_class"="connectivity";
-           }
-        }
-   
-    $params = $params | ConvertTo-Json
-    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityHeartbeat" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
-
-    $params = @{
-        "state"="on";
-        "attributes"= @{
-           "friendly_name"="$entityHeartbeatName";
-           "icon"="$iconMonitoring";
-           "device_class"="connectivity";
-           }
-        }
-   
-    $params = $params | ConvertTo-Json
-    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityHeartbeat" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
-}
-
-# Start the stopwatch that will be monitoring the status of the Windows Service
-$stopwatch =  [system.diagnostics.stopwatch]::StartNew()
-# Set the Windows Service heartbeat sensor at startup
-publishOnlineState
-
+# Clear variables
 $CurrentStatus = ""
 $CurrentActivity = ""
 
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
-# Set the Windows Service heartbeat sensor every 5 minutes and restart the stopwatch
-If ([int]$stopwatch.Elapsed.Minutes -ge 4){
-    $stopwatch.Restart()
-    publishOnlineState
-}
-
 # Get Teams Logfile and last icon overlay status
 $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 500 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
@@ -114,7 +72,7 @@ $TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 If ($null -ne $TeamsProcess) {
     If ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgAvailable*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added Available*" -or `
-            $TeamsStatus -like "*StatusIndicatorStateService: Added NewActivity (current state: Available -> NewActivity*") {
+        $TeamsStatus -like "*StatusIndicatorStateService: Added NewActivity (current state: Available -> NewActivity*") {
         $Status = $lgAvailable
         Write-Host $Status
     }
