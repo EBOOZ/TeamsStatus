@@ -136,8 +136,17 @@ If ($null -ne $TeamsProcess) {
     ElseIf ($TeamsActivity -like "*Pausing daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsActiveCall*" -or `
         $TeamsActivity -like "*name: desktop_call_state_change_send, isOngoing: true*") {
-        $Activity = $lgInACall
-        $ActivityIcon = $iconInACall
+        
+		$webcam = Get-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam\NonPackaged\C:#Users#A55452#AppData#Local#Microsoft#Teams#current#Teams.exe" -Name LastUsedTimeStop | select LastUsedTimeStop
+		
+		if ($webcam.LastUsedTimeStop -eq 0){
+			$Activity = $lgInACallWebcamOn
+			$ActivityIcon = $iconInACall
+		}
+		else {
+			$Activity = $lgInACall
+			$ActivityIcon = $iconInACall
+		}
         Write-Host $Activity
     }
 }
