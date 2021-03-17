@@ -23,6 +23,9 @@
 # Configuring parameter for interactive run
 Param($SetStatus)
 
+# Enable or disable debugging
+$Debug = $true
+
 # Import Settings PowerShell script
 . ($PSScriptRoot + "\Settings.ps1")
 
@@ -45,17 +48,13 @@ If($null -ne $SetStatus){
     break
 }
 
-# Clear variables
-$CurrentStatus = ""
-$CurrentActivity = ""
-
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
 # Get Teams Logfile and last icon overlay status
 $TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 500 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
   'StatusIndicatorStateService: Added' | Select-Object -Last 1
-#Write-Host $TeamsStatus
+
 # Get Teams Logfile and last app update deamon status
 $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 500 | Select-String -Pattern `
   'Resuming daemon App updates',`
@@ -64,13 +63,14 @@ $TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft
   'SfB:TeamsPendingCall',`
   'SfB:TeamsActiveCall',`
   'name: desktop_call_state_change_send, isOngoing' | Select-Object -Last 1
-#Write-Host $TeamsActivity
+
 # Get Teams application process
 $TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 
 # Check if Teams is running and start monitoring the log if it is
 If ($null -ne $TeamsProcess) {
-    If ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgAvailable*" -or `
+    If($TeamsStatus -eq $null){ }
+    ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgAvailable*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added Available*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added NewActivity (current state: Available -> NewActivity*") {
         $Status = $lgAvailable
@@ -126,7 +126,8 @@ If ($null -ne $TeamsProcess) {
         Write-Host $Status
     }
 
-    If ($TeamsActivity -like "*Resuming daemon App updates*" -or `
+    If($TeamsActivity -eq $null){ }
+    ElseIf ($TeamsActivity -like "*Resuming daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsNoCall*" -or `
         $TeamsActivity -like "*name: desktop_call_state_change_send, isOngoing: false*") {
         $Activity = $lgNotInACall
@@ -151,7 +152,7 @@ Else {
 }
 
 # Call Home Assistant API to set the status and activity sensors
-If ($CurrentStatus -ne $Status) {
+If ($CurrentStatus -ne $Status -and $Status -ne $null) {
     $CurrentStatus = $Status
 
     $params = @{
