@@ -69,7 +69,10 @@ $TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 
 # Check if Teams is running and start monitoring the log if it is
 If ($null -ne $TeamsProcess) {
-    If($TeamsStatus -eq $null){ }
+    If($TeamsStatus -eq $null){ 
+        $Status = $lgOffline
+        Write-Host $Status
+    }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgAvailable*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added Available*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added NewActivity (current state: Available -> NewActivity*") {
@@ -126,7 +129,11 @@ If ($null -ne $TeamsProcess) {
         Write-Host $Status
     }
 
-    If($TeamsActivity -eq $null){ }
+    If($TeamsActivity -eq $null){ 
+        $Activity = $lgNotInACall
+        $ActivityIcon = $iconNotInACall
+        Write-Host $Activity
+    }
     ElseIf ($TeamsActivity -like "*Resuming daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsNoCall*" -or `
         $TeamsActivity -like "*name: desktop_call_state_change_send, isOngoing: false*") {
