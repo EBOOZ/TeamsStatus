@@ -23,9 +23,6 @@
 # Configuring parameter for interactive run
 Param($SetStatus)
 
-# Enable or disable debugging
-$Debug = $true
-
 # Import Settings PowerShell script
 . ($PSScriptRoot + "\Settings.ps1")
 
@@ -51,12 +48,12 @@ If($null -ne $SetStatus){
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
 # Get Teams Logfile and last icon overlay status
-$TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 500 | Select-String -Pattern `
+$TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 1000 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
   'StatusIndicatorStateService: Added' | Select-Object -Last 1
 
 # Get Teams Logfile and last app update deamon status
-$TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 500 | Select-String -Pattern `
+$TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 1000 | Select-String -Pattern `
   'Resuming daemon App updates',`
   'Pausing daemon App updates',`
   'SfB:TeamsNoCall',`
