@@ -19,6 +19,12 @@
     directly from the commandline.
 .EXAMPLE
     .\Get-TeamsStatus.ps1 -SetStatus "Offline"
+    
+.VERSION HISTORY
+...
+2021-04-01 by anoyme22:
+	Change "C:\Users\$UserName\AppData\Roaming" by environnement variable @env:APPDATA
+
 #>
 # Configuring parameter for interactive run
 Param($SetStatus)
@@ -48,12 +54,12 @@ If($null -ne $SetStatus){
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
 # Get Teams Logfile and last icon overlay status
-$TeamsStatus = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 1000 | Select-String -Pattern `
+$TeamsStatus = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -Tail 1000 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
   'StatusIndicatorStateService: Added' | Select-Object -Last 1
 
 # Get Teams Logfile and last app update deamon status
-$TeamsActivity = Get-Content -Path "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt" -Tail 1000 | Select-String -Pattern `
+$TeamsActivity = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -Tail 1000 | Select-String -Pattern `
   'Resuming daemon App updates',`
   'Pausing daemon App updates',`
   'SfB:TeamsNoCall',`
