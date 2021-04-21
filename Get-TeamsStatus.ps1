@@ -19,12 +19,6 @@
     directly from the commandline.
 .EXAMPLE
     .\Get-TeamsStatus.ps1 -SetStatus "Offline"
-    
-.VERSION HISTORY
-...
-2021-04-01 by anoyme22:
-	Change "C:\Users\$UserName\AppData\Roaming" by environnement variable @env:APPDATA
-
 #>
 # Configuring parameter for interactive run
 Param($SetStatus)
