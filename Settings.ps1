@@ -4,18 +4,8 @@ $UserName = "<UserName>" # When not sure, open a command prompt and type: echo %
 $HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
 
 # Set language variables below
-$lgAvailable = "Available"
-$lgBusy = "Busy"
-$lgOnThePhone = "On the phone"
-$lgAway = "Away"
-$lgBeRightBack = "Be right back"
-$lgDoNotDisturb = "Do not disturb"
-$lgPresenting = "Presenting"
-$lgFocusing = "Focusing"
-$lgInAMeeting = "In a meeting"
-$lgOffline = "Offline"
-$lgNotInACall = "Not in a call"
-$lgInACall = "In a call"
+$Lang = "en"
+# $Lang = "nl"
 
 # Set icons to use for call activity
 $iconInACall = "mdi:phone-in-talk-outline"
