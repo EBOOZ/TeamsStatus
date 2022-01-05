@@ -1,7 +1,7 @@
 # Configure the variables below that will be used in the script
-$HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
-$UserName = "<UserName>" # When not sure, open a command prompt and type: echo %USERNAME%
-$HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
+$HAToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhMTA0NjgwNjRlZTM0YmQ0OGY5NTE3M2I2NmM1ZWY3MyIsImlhdCI6MTY0MTIyNjQ1NSwiZXhwIjoxOTU2NTg2NDU1fQ.GkLeqakMmJRCaejhbt4sQKc85caXeJOUTi5B3mUx2y8" # Example: eyJ0eXAiOiJKV1...
+$UserName = "pwatkin1" # When not sure, open a command prompt and type: echo %USERNAME%
+$HAUrl = "https://homeassistant.narcolepsy.ninja" # Example: https://yourha.duckdns.org
 
 # Set language variables below
 $lgAvailable = "Available"

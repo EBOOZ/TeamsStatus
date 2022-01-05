@@ -48,12 +48,12 @@ If($null -ne $SetStatus){
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
 # Get Teams Logfile and last icon overlay status
-$TeamsStatus = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -Tail 1000 | Select-String -Pattern `
+$TeamsStatus = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -Tail 10000 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
   'StatusIndicatorStateService: Added' | Select-Object -Last 1
 
 # Get Teams Logfile and last app update deamon status
-$TeamsActivity = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -Tail 1000 | Select-String -Pattern `
+$TeamsActivity = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -Tail 10000 | Select-String -Pattern `
   'Resuming daemon App updates',`
   'Pausing daemon App updates',`
   'SfB:TeamsNoCall',`
@@ -66,7 +66,7 @@ $TeamsProcess = Get-Process -Name Teams -ErrorAction SilentlyContinue
 
 # Check if Teams is running and start monitoring the log if it is
 If ($null -ne $TeamsProcess) {
-    If($TeamsStatus -eq $null){ }
+    If($null -eq $TeamsStatus){ }
     ElseIf ($TeamsStatus -like "*Setting the taskbar overlay icon - $lgAvailable*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added Available*" -or `
         $TeamsStatus -like "*StatusIndicatorStateService: Added NewActivity (current state: Available -> NewActivity*") {
@@ -123,7 +123,7 @@ If ($null -ne $TeamsProcess) {
         Write-Host $Status
     }
 
-    If($TeamsActivity -eq $null){ }
+    If($null -eq $TeamsActivity){ }
     ElseIf ($TeamsActivity -like "*Resuming daemon App updates*" -or `
         $TeamsActivity -like "*SfB:TeamsNoCall*" -or `
         $TeamsActivity -like "*name: desktop_call_state_change_send, isOngoing: false*") {
@@ -149,7 +149,7 @@ Else {
 }
 
 # Call Home Assistant API to set the status and activity sensors
-If ($CurrentStatus -ne $Status -and $Status -ne $null) {
+If ($CurrentStatus -ne $Status -and $null -ne $Status) {
     $CurrentStatus = $Status
 
     $params = @{
@@ -161,7 +161,27 @@ If ($CurrentStatus -ne $Status -and $Status -ne $null) {
      }
 	 
     $params = $params | ConvertTo-Json
-    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityStatus" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
+    try {
+        Invoke-RestMethod `
+            -Uri "$HAUrl/api/states/$entityStatus" `
+            -Method POST `
+            -Headers $headers `
+            -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
+            -ContentType "application/json" 
+    } catch {
+        if ($_.Exception.Response.StatusCode.value__ -eq 407) {
+            Write-Host $_.Exception.Response.StatusDescription
+            $Wcl = new-object System.Net.WebClient
+            $Wcl.Headers.Add(“user-agent”, “PowerShell Script”)
+            $Wcl.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials 
+            Invoke-RestMethod `
+            -Uri "$HAUrl/api/states/$entityStatus" `
+            -Method POST `
+            -Headers $headers `
+            -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
+            -ContentType "application/json" 
+        }
+    }
 }
 
 If ($CurrentActivity -ne $Activity) {
@@ -175,7 +195,28 @@ If ($CurrentActivity -ne $Activity) {
         }
      }
     $params = $params | ConvertTo-Json
-    Invoke-RestMethod -Uri "$HAUrl/api/states/$entityActivity" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json" 
+    try {
+    Invoke-RestMethod  `
+        -Uri "$HAUrl/api/states/$entityActivity" `
+        -Method POST `
+        -Headers $headers `
+        -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
+        -ContentType "application/json" 
+    } catch {
+        if ($_.Exception.Response.StatusCode.value__ -eq 407) {
+            Write-Host $_.Exception.Response.StatusDescription
+            $Wcl = new-object System.Net.WebClient
+            $Wcl.Headers.Add(“user-agent”, “PowerShell Script”)
+            $Wcl.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials    
+            Invoke-RestMethod  `
+            -Uri "$HAUrl/api/states/$entityActivity" `
+            -Method POST `
+            -Headers $headers `
+            -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
+            -ContentType "application/json" 
+        }
+    }
+
 }
     Start-Sleep 1
 } Until ($Enable -eq 0)
