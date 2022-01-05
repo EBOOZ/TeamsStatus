@@ -150,6 +150,11 @@ Else {
 
 # Call Home Assistant API to set the status and activity sensors
 If ($CurrentStatus -ne $Status -and $null -ne $Status) {
+    # Use default credentials in the case of a proxy server
+    $Wcl = new-object System.Net.WebClient
+    $Wcl.Headers.Add(“user-agent”, “PowerShell Script”)
+    $Wcl.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials 
+
     $CurrentStatus = $Status
 
     $params = @{
@@ -161,27 +166,13 @@ If ($CurrentStatus -ne $Status -and $null -ne $Status) {
      }
 	 
     $params = $params | ConvertTo-Json
-    try {
-        Invoke-RestMethod `
-            -Uri "$HAUrl/api/states/$entityStatus" `
-            -Method POST `
-            -Headers $headers `
-            -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
-            -ContentType "application/json" 
-    } catch {
-        if ($_.Exception.Response.StatusCode.value__ -eq 407) {
-            Write-Host $_.Exception.Response.StatusDescription
-            $Wcl = new-object System.Net.WebClient
-            $Wcl.Headers.Add(“user-agent”, “PowerShell Script”)
-            $Wcl.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials 
-            Invoke-RestMethod `
-            -Uri "$HAUrl/api/states/$entityStatus" `
-            -Method POST `
-            -Headers $headers `
-            -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
-            -ContentType "application/json" 
-        }
-    }
+    Invoke-RestMethod `
+        -Uri "$HAUrl/api/states/$entityStatus" `
+        -Method POST `
+        -Headers $headers `
+        -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
+        -ContentType "application/json" 
+
 }
 
 If ($CurrentActivity -ne $Activity) {
@@ -195,27 +186,12 @@ If ($CurrentActivity -ne $Activity) {
         }
      }
     $params = $params | ConvertTo-Json
-    try {
     Invoke-RestMethod  `
         -Uri "$HAUrl/api/states/$entityActivity" `
         -Method POST `
         -Headers $headers `
         -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
         -ContentType "application/json" 
-    } catch {
-        if ($_.Exception.Response.StatusCode.value__ -eq 407) {
-            Write-Host $_.Exception.Response.StatusDescription
-            $Wcl = new-object System.Net.WebClient
-            $Wcl.Headers.Add(“user-agent”, “PowerShell Script”)
-            $Wcl.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials    
-            Invoke-RestMethod  `
-            -Uri "$HAUrl/api/states/$entityActivity" `
-            -Method POST `
-            -Headers $headers `
-            -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) `
-            -ContentType "application/json" 
-        }
-    }
 
 }
     Start-Sleep 1
