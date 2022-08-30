@@ -1,7 +1,13 @@
 # Configure the variables below that will be used in the script
-$HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
 $UserName = "<UserName>" # When not sure, open a command prompt and type: echo %USERNAME%
+
+$HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
 $HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
+
+$JeedomToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
+$JeedomUrl = "<JeedomUrl>" # Example: https://yourjeedom.duckdns.org
+$JeedomStatusId = "<ID>" # Example : 745
+$JeedomActivityId = "<ID>" # Example : 746
 
 # Set language variables below
 $lgAvailable = "Available"
