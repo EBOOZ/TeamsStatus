@@ -69,15 +69,25 @@ If($null -ne $SetStatus){
         Invoke-RestMethod -Uri "$HAUrl/api/states/$entityStatus" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json"
     }
     if (($null -ne $JeedomToken) -and ($null -ne $JeedomUrl)) {
-        Invoke-WebRequest -UseBasicParsing -Uri "https://$JeedomUrl/core/api/jeeApi.php?plugin=virtual&type=event&apikey=$JeedomToken&id=$JeedomStatusId&value=$SetStatus"
+        $Response = Invoke-WebRequest -Uri "https://$JeedomUrl/core/api/jeeApi.php?plugin=virtual&type=event&apikey=$JeedomToken&id=$JeedomStatusId&value=$SetStatus"
+        if ($Response|Where-Object {$_.StatusCode -ne 200}) {
+            Write-Host "Error to contact Jeedom"
+        }
     }
     break
+}
+
+If ($env:APPDATA -match "C:\\Users") {
+	$teamsLogPath = "$env:APPDATA\Microsoft\Teams\logs.txt"
+}
+Else {
+	$teamsLogPath = "C:\Users\$UserName\AppData\Roaming\Microsoft\Teams\logs.txt"
 }
 
 # Start monitoring the Teams logfile when no parameter is used to run the script
 DO {
 # Get Teams Logfile and last icon overlay status
-$TeamsStatus = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -encoding utf8 -Tail 1000 | Select-String -Pattern `
+$TeamsStatus = Get-Content -Path $teamsLogPath -encoding utf8 -Tail 1000 | Select-String -Pattern `
   'Setting the taskbar overlay icon -',`
   'StatusIndicatorStateService: Added' | Select-Object -Last 1 
 
@@ -85,7 +95,7 @@ $TeamsStatus = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -encodi
 # Write-Host "test variable UTF8 $(Convert-Umlaut($lgAvailable)) $(Convert-Umlaut($lgBusy)) $(Convert-Umlaut($lgOnThePhone)) $(Convert-Umlaut($lgAway)) $(Convert-Umlaut($lgBeRightBack)) $(Convert-Umlaut($lgDoNotDisturb)) $(Convert-Umlaut($lgPresenting)) $(Convert-Umlaut($lgFocusing)) $(Convert-Umlaut($lgInAMeeting)) $(Convert-Umlaut($lgOffline)) $(Convert-Umlaut($lgNotInACall)) $(Convert-Umlaut($lgInACall))"
 
 # Get Teams Logfile and last app update deamon status
-$TeamsActivity = Get-Content -Path $env:APPDATA"\Microsoft\Teams\logs.txt" -encoding utf8 -Tail 1000 | Select-String -Pattern `
+$TeamsActivity = Get-Content -Path $teamsLogPath -encoding utf8 -Tail 1000 | Select-String -Pattern `
   'Resuming daemon App updates',`
   'Pausing daemon App updates',`
   'SfB:TeamsNoCall',`

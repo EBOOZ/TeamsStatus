@@ -1,5 +1,5 @@
 # Configure the variables below that will be used in the script
-$UserName = "<UserName>" # When not sure, open a command prompt and type: echo %USERNAME%
+$UserName = "<UserName>" # Need when running as a service (When not sure, open a command prompt and type: echo %USERNAME%)
 
 $HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
 $HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
