@@ -15,7 +15,12 @@ For Jeedom, you need to create a Virtual with 2 sensors and type "other" :
 Once saved, the command's ID are visible.
 
 # Important
-This solution is created to work with Home Assistant and Jeedom. It will work with any home automation platform that provides an API, but you probably need to change the PowerShell code.
+This solution is created to work with Home Assistant or Jeedom. It will work with any home automation platform that provides an API, but you probably need to change the PowerShell code.
+
+Please check your language for the settings! Powershell hasn't have a good implementation for UTF8, we need to replace value in variables. Currently English and French are good. Maybe you need to add characters at this line in the script (and share it!) :
+```Powershell
+$output = $Text.Replace('Ã©','é').Replace('Ã´','ô')
+```
 
 # Requirements
 ## Home Assistant
@@ -59,8 +64,9 @@ sensor:
   * Replace `<HAURL>` or `<Jeedom URL>` with the URL to your Home Assistant / Jeedom server
   * Adjust the language settings to your preferences
 # Installation
-Start a elevated PowerShell prompt, browse to C:\Scripts and run the following command:
+Start a elevated PowerShell prompt, browse to the TeamsStatus folder and run the following command:
 ```powershell
+New-Item -Path "c:\Scripts\" -ItemType Directory
 Copy-Item -Path .\nssm.exe -Destination "c:\Scripts\"
 Copy-Item -Path .\Settings.local.ps1 -Destination "c:\Scripts\"
 Copy-Item -Path .\Get-TeamsStatus.ps1 -Destination "c:\Scripts\"
