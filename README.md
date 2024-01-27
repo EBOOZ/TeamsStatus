@@ -1,3 +1,6 @@
+> [!NOTE]
+> This solution only works for the legacy version of Microsoft Teams. The new version does not contain a logs.txt file which can be read by the script. Therefor this repository is not maintained anymore.
+
 # Introduction
 We're working a lot at our home office these days. Several people already found inventive solutions to make working in the home office more comfortable. One of these ways is to automate activities in your home automatation system based on your status on Microsoft Teams.
 
