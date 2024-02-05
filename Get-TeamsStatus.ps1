@@ -152,6 +152,11 @@ Else {
 If ($CurrentStatus -ne $Status -and $Status -ne $null) {
     $CurrentStatus = $Status
 
+    # Use default credentials in the case of a proxy server
+    $Wcl = new-object System.Net.WebClient
+    $Wcl.Headers.Add("user-agent", "PowerShell Script")
+    $Wcl.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials 
+
     $params = @{
      "state"="$CurrentStatus";
      "attributes"= @{
