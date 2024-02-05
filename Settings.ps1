@@ -14,8 +14,8 @@ $lgPresenting = "Presenting"
 $lgFocusing = "Focusing"
 $lgInAMeeting = "In a meeting"
 $lgOffline = "Offline"
-$lgNotInACall = "Not in a call"
-$lgInACall = "In a call"
+$lgInACall = "In a call - camera off"
+$lgInACallWebcamOn = "In a call - camera on"
 
 # Set icons to use for call activity
 $iconInACall = "mdi:phone-in-talk-outline"
