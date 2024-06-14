@@ -1,18 +1,20 @@
 # Configure the variables below that will be used in the script
-$HAToken = "<Insert token>" # Example: eyJ0eXAiOiJKV1...
-$UserName = "<UserName>" # When not sure, open a command prompt and type: echo %USERNAME%
-$HAUrl = "<HAUrl>" # Example: https://yourha.duckdns.org
+$HAToken = "" # Example: eyJ0eXAiOiJKV1...
+$UserName = "" # When not sure, open a command prompt and type: echo %USERNAME%
+$HAUrl = "" # Example: https://yourha.duckdns.org
+# Define the path to the Microsoft Teams log directory
+$logDirPath = "$env:UserProfile\AppData\Local\Packages\MSTeams_8wekyb3d8bbwe\LocalCache\Microsoft\MSTeams\Logs"
 
 # Set language variables below
 $lgAvailable = "Available"
 $lgBusy = "Busy"
-$lgOnThePhone = "On the phone"
+$lgOnThePhone = "Onthephone"
 $lgAway = "Away"
-$lgBeRightBack = "Be right back"
-$lgDoNotDisturb = "Do not disturb"
+$lgBeRightBack = "BeRightBack"
+$lgDoNotDisturb = "DoNotDisturb"
 $lgPresenting = "Presenting"
 $lgFocusing = "Focusing"
-$lgInAMeeting = "In a meeting"
+$lgInAMeeting = "InAMeeting"
 $lgOffline = "Offline"
 $lgNotInACall = "Not in a call"
 $lgInACall = "In a call"
