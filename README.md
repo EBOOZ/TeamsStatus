@@ -41,6 +41,7 @@ template:
   * Replace `<HA URL>` with the URL to your Home Assistant server
   * Adjust the language settings to your preferences
 * Start a elevated PowerShell prompt, browse to C:\Scripts and run the following command:
+# Please note, this is not technically required, you can just runthe script if you don't have admin access
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 Unblock-File .\Settings.ps1
@@ -51,7 +52,7 @@ Start-Service -Name "Microsoft Teams Status Monitor"
 
 After completing the steps below, start your Teams client and verify if the status and activity is updated as expected.
 
-Known issues:
+# Known issues:
 * Currently there is a delay between status changes and the update being written to the log due to MS Teams memory caching
 * Switching back and forth between the Available status (this is a logic issue I need to find)
 * Not currently tracking all Activity Levels
