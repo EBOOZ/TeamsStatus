@@ -4,6 +4,7 @@ $UserName = "" # When not sure, open a command prompt and type: echo %USERNAME%
 $HAUrl = "" # Example: https://yourha.duckdns.org
 # Define the path to the Microsoft Teams log directory
 $logDirPath = "$env:UserProfile\AppData\Local\Packages\MSTeams_8wekyb3d8bbwe\LocalCache\Microsoft\MSTeams\Logs"
+$refreshDelay = 5
 
 # Set language variables below
 $lgAvailable = "Available"
