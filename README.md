@@ -41,6 +41,7 @@ template:
   * Replace `<HA URL>` with the URL to your Home Assistant server
   * Adjust the language settings to your preferences
 * Start a elevated PowerShell prompt, browse to C:\Scripts and run the following command:
+
 ** Please note, this is not technically required, you can just run the script if you don't have admin access
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
