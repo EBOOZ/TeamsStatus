@@ -18,17 +18,8 @@ This solution is created to work with Home Assistant. It will work with any home
 # Requirements
 * Create the three Teams sensors in the Home Assistant configuration.yaml file
 ```yaml
-input_text:
-  teams_status:
-    name: Microsoft Teams status
-    icon: mdi:microsoft-teams
-  teams_activity:
-    name: Microsoft Teams activity
-    icon: mdi:phone-off
-
-sensor:
-  - platform: template
-    sensors:
+template:
+    - sensors:
       teams_status: 
         friendly_name: "Microsoft Teams status"
         value_template: "{{states('input_text.teams_status')}}"
@@ -59,3 +50,8 @@ Start-Service -Name "Microsoft Teams Status Monitor"
 ```
 
 After completing the steps below, start your Teams client and verify if the status and activity is updated as expected.
+
+Known issues:
+* Currently there is a delay between status changes and the update being written to the log due to MS Teams memory caching
+* Switching back and forth between the Available status (this is a logic issue I need to find)
+* Not currently tracking all Activity Levels
