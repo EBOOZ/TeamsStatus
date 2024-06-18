@@ -1,61 +1,17 @@
-<#
-.NOTES
-    Name: Get-TeamsStatus.ps1
-    Author: Danny de Vries
-    Requires: PowerShell v2 or higher
-    Version History: https://github.com/EBOOZ/TeamsStatus/commits/main
-.SYNOPSIS
-    Sets the status of the Microsoft Teams client to Home Assistant.
-.DESCRIPTION
-    This script is monitoring the Teams client logfile for certain changes. It
-    makes use of two sensors that are created in Home Assistant up front.
-    The status entity (sensor.teams_status by default) displays that availability 
-    status of your Teams client based on the icon overlay in the taskbar on Windows. 
-    The activity entity (sensor.teams_activity by default) shows if you
-    are in a call or not based on the App updates deamon, which is paused as soon as 
-    you join a call.
-.PARAMETER SetStatus
-    Run the script with the SetStatus-parameter to set the status of Microsoft Teams
-    directly from the commandline.
-.EXAMPLE
-    .\Get-TeamsStatus.ps1 -SetStatus "Offline"
-#>
-# Configuring parameter for interactive run
-Param($SetStatus)
-
 # Import Settings PowerShell script
 . ($PSScriptRoot + "\Settings.ps1")
 
-$headers = @{"Authorization"="Bearer $HAToken";}
-$Enable = 1
+# Initialize global variables
+$currentAvailability = $null
+$currentActivity = $null
+$previousAvailability = $null
+$previousActivity = $null
+$ActivityIcon = $iconNotInACall
 
-# Run the script when a parameter is used and stop when done
-If($null -ne $SetStatus){
-    Write-Host ("Setting Microsoft Teams status to "+$SetStatus+":")
-    $params = @{
-     "state"="$SetStatus";
-     "attributes"= @{
-        "friendly_name"="$entityStatusName";
-        "icon"="mdi:microsoft-teams";
-        }
-     }
-	 
-    $params = $params | ConvertTo-Json
-    try {
-        Invoke-RestMethod -Uri "$HAUrl/api/states/$entityStatus" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json"
-        Write-Host "Status set successfully."
-    } catch {
-        Write-Error "Failed to set status: $_"
-    }
-    break
-}
-
-# Define the function to get the latest log file
 function Get-LatestLogFile {
     try {
         $logFiles = Get-ChildItem -Path $logDirPath -Filter "MSTeams_*.log" | Sort-Object LastWriteTime -Descending
         if ($logFiles.Count -gt 0) {
-            Write-Host "Latest log file: $($logFiles[0].FullName)"
             return $logFiles[0].FullName
         } else {
             Write-Error "No log files found."
@@ -67,198 +23,82 @@ function Get-LatestLogFile {
     }
 }
 
-# Start monitoring the Teams logfile when no parameter is used to run the script
-DO {
-    # Get Teams Logfile and last icon overlay status
-    $latestLogFile = Get-LatestLogFile
-    if ($null -eq $latestLogFile) {
-        Write-Host "No log file found, skipping this iteration."
-        Start-Sleep 1
-        continue
-    }
+Function Find-LatestAvailability {
+    Param ([string]$logFilePath)
 
-    # Define the string patterns to filter
-    $statuspatterns = @(
-        "Received Action: UserPresenceAction:",
-        "CloudStateChanged: New Cloud State Event:",
-        "BroadcastGlobalState: New Global State Event:",
-        "Received Action: UserPresenceAction:",
-        ": Received Action: UserPresenceAction:"
-    )
+    $logFileContent = Get-Content -Path $logFilePath -ReadCount 0 | Select-Object -Last 1000
+    [array]::Reverse($logFileContent)
+    foreach ($line in $logFileContent) {
+        $timestampMatches = [regex]::Matches($line, $timestampPattern)
+        $availabilityMatches = [regex]::Matches($line, $availabilityPattern)
 
-    # Get the last 1000 lines from the log file
-    $logContent = Get-Content -Path $latestLogFile -Tail 1000
-
-    # Filter for the specific patterns
-    $filteredLines = $logContent | Where-Object {
-        foreach ($statuspattern in $statuspatterns) {
-            if ($_ -match $statuspattern) {
-                return $true
-            }
+        if ($timestampMatches.Count -gt 0 -and $availabilityMatches.Count -gt 0) {
+            $availabilitytimestamp = $timestampMatches[0].Value
+            $script:currentAvailability = $availabilityMatches[0].Groups[1].Value
+            Write-Host "Found availability: $script:currentAvailability at $availabilitytimestamp"
+            return "Timestamp: $availabilitytimestamp, Availability: $script:currentAvailability"
         }
-        return $false
     }
-    
-    # Select the most recent (last) line
-    if ($null -eq $filteredLines) {
-        Write-Host "No Availability Updates, skipping this iteration."
+    Write-Host "No availability found in the recent log entries."
+    return $null
+}
+
+Function Find-LatestActivity {
+    Param ([string]$logFilePath)
+
+    $logFileContent = Get-Content -Path $logFilePath -ReadCount 0 | Select-Object -Last 1000
+    [array]::Reverse($logFileContent)
+    foreach ($line in $logFileContent) {
+        $timestampMatches = [regex]::Matches($line, $timestampPattern)
+        $activityMatches = [regex]::Matches($line, $activityPattern)
+
+        if ($timestampMatches.Count -gt 0 -and $activityMatches.Count -gt 0) {
+            $activitytimestamp = $timestampMatches[0].Value
+            $script:currentActivity = $activityMatches[0].Groups[1].Value
+            Write-Host "Found activity: $script:currentActivity at $activitytimestamp"
+            return "Timestamp: $activitytimestamp, Activity: $script:currentActivity"
+        }
+    }
+    Write-Host "No activity found in the recent log entries."
+    return $null
+}
+
+Function Set-ActivityIcon {
+    if ($script:currentActivity -eq "VeryActive") {
+        $script:ActivityIcon = $iconInACall
     } else {
-        $recentLine = $filteredLines[-1]
+        $script:ActivityIcon = $iconNotInACall
     }
+}
 
-    # Extract the timestamp (first 32 characters) and availability status
-    if ($recentLine) {
-        $timestamp = $recentLine.Substring(0, 32).Trim()
-
-        # Extract the availability status using a regex pattern
-        if ($recentLine -match "availability: (\w+)(.+)$") {
-            $availabilityStatus = $matches[1]
-        } else {
-            $availabilityStatus = "Unknown"
-        }
-
-        # Output the results
-        Write-Host "Timestamp: $timestamp"
-        Write-Host "Availability Status:$availabilityStatus Status:$Status Current Status:$CurrentStatus $recentLine"
-    } else {
-        Write-Host "No matching lines found."
-    }
-
-        # Define the string patterns to filter
-    $activepatterns = @(
-        "EmitWebClientStateChangeEvent",
-        "SaveHighestWebClientState",
-        "SaveLastChangedWebClientState"
-    )
-
-    # Get the last 1000 lines from the log file
-    $logContent = Get-Content -Path $latestLogFile -Tail 1000
-
-    # Filter for the specific patterns
-    $filteredLines = $logContent | Where-Object {
-        foreach ($activepattern in $activepatterns) {
-            if ($_ -match $activepattern) {
-                return $true
-            }
-        }
-        return $false
-    }
-
-    # Select the most recent (last) line
-    if ($null -eq $filteredLines) {
-        Write-Host "No Activity Updates, skipping this iteration."
-    } else {
-        $recentLine = $filteredLines[-1]
-    }
-        
-
-    # Extract the timestamp (first 32 characters) and availability status
-    if ($recentLine) {
-        $timestamp = $recentLine.Substring(0, 32).Trim()
-
-        # Extract the availability status using a regex pattern
-        if ($recentLine -match "state=(\w+)") {
-            $activityStatus = $matches[1]
-        } else {
-            $activityStatus = "Unknown"
-        }
-
-        # Output the results
-        Write-Host "Timestamp: $timestamp"
-        Write-Host "Activity Status: $activityStatus"
-    } else {
-        Write-Host "No matching lines found."
-    }
-
-    # Get Teams application process
-    $TeamsProcess = Get-Process -Name ms-teams -ErrorAction SilentlyContinue
-
-    # Check if Teams is running and start monitoring the log if it is
-    If ($null -ne $TeamsProcess) {
-        Write-Host "Microsoft Teams process is running."
-
-        If($availabilityStatus -eq $null){ 
-            Write-Host "No TeamsStatus entries found."
-        } ElseIf (($availabilityStatus | Out-String) -like "lgAvailable") {
-            $Status = $lgAvailable
-            Write-Host "Status set to: $Status"
-        } ElseIf ($availabilityStatus -like "*$lgBusy*") {
-            $Status = $lgBusy
-            Write-Host "Status set to: $Status"
-        } ElseIf ($availabilityStatus -like "*$lgAway*") {
-            $Status = $lgAway
-            Write-Host "Status set to: $Status"
-        } ElseIf ($availabilityStatus -like "*$lgBeRightBack*") {
-            $Status = $lgBeRightBack
-            Write-Host "Status set to: $Status"
-        } ElseIf ($availabilityStatus -like "*$lgDoNotDisturb*") {
-            $Status = $lgDoNotDisturb
-            Write-Host "Status set to: $Status"
-        } ElseIf ($availabilityStatus -like "*$lgFocusing*") {
-            $Status = $lgFocusing
-            Write-Host "Status set to: $Status"
-        } ElseIf ($availabilityStatus -like "*$lgPresenting*") {
-            $Status = $lgPresenting
-            Write-Host "Status set to: $Status"
-        } ElseIf ($availabilityStatus -like "*$lgInAMeeting*") {
-            $Status = $lgInAMeeting
-            Write-Host "Status set to: $Status"
-        } ElseIf ($availabilityStatus -like "*$lgOffline*") {
-            $Status = $lgOffline
-            Write-Host "Status set to: $Status"
-        } Else {
-            Write-Host "No Match"
-        }
-
-        If($TeamsActivity -eq $null){ 
-            Write-Host "No TeamsActivity entries found."
-        } ElseIf ($activityStatus -like "*VeryActive*") {
-            $Activity = $lgInACall
-            $ActivityIcon = $iconInACall
-            Write-Host "Activity set to: $Activity"
-        } Else {
-            $Activity = $lgNotInACall
-            $ActivityIcon = $iconNotInACall
-            Write-Host "Activity set to: $Activity"
-        }
-    } Else {
-        # Set status to Offline when the Teams application is not running
-        Write-Host "Microsoft Teams process is not running."
-        $Status = $lgOffline
-        $Activity = $lgNotInACall
-        $ActivityIcon = $iconNotInACall
-        Write-Host "Status set to: $Status"
-        Write-Host "Activity set to: $Activity"
-    }
-
-    # Call Home Assistant API to set the status and activity sensors
-    If ($CurrentStatus -ne $Status -and $Status -ne $null) {
-        $CurrentStatus = $Status
+Function Send-LatestActivity {
+    if ($script:currentAvailability -ne $script:previousAvailability) {
         $params = @{
-         "state"="$CurrentStatus";
-         "attributes"= @{
-            "friendly_name"="$entityStatusName";
-            "icon"="mdi:microsoft-teams";
+            "state" = "$script:currentAvailability";
+            "attributes" = @{
+                "friendly_name" = "$entityStatusName";
+                "icon" = "mdi:microsoft-teams";
             }
-         }
+        }
         $params = $params | ConvertTo-Json
         try {
             Invoke-RestMethod -Uri "$HAUrl/api/states/$entityStatus" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json"
-            Write-Host "Successfully updated status to Home Assistant."
+            Write-Host "Successfully updated availability to Home Assistant."
         } catch {
-            Write-Error "Failed to update status to Home Assistant: $_"
+            Write-Error "Failed to update availability to Home Assistant: $_"
         }
+    } else {
+        Write-Host "No change in availability, skipping update."
     }
 
-    If ($CurrentActivity -ne $Activity) {
-        $CurrentActivity = $Activity
+    if ($script:currentActivity -ne $script:previousActivity) {
         $params = @{
-         "state"="$Activity";
-         "attributes"= @{
-            "friendly_name"="$entityActivityName";
-            "icon"="$ActivityIcon";
+            "state" = "$script:currentActivity";
+            "attributes" = @{
+                "friendly_name" = "$entityActivityName";
+                "icon" = "$script:ActivityIcon";
             }
-         }
+        }
         $params = $params | ConvertTo-Json
         try {
             Invoke-RestMethod -Uri "$HAUrl/api/states/$entityActivity" -Method POST -Headers $headers -Body ([System.Text.Encoding]::UTF8.GetBytes($params)) -ContentType "application/json"
@@ -266,7 +106,49 @@ DO {
         } catch {
             Write-Error "Failed to update activity to Home Assistant: $_"
         }
+    } else {
+        Write-Host "No change in activity, skipping update."
     }
 
-    Start-Sleep $refreshDelay
-} Until ($Enable -eq 0)
+    $script:previousAvailability = $script:currentAvailability
+    $script:previousActivity = $script:currentActivity
+}
+
+while ($true) {
+    $TeamsProcess = Get-Process -Name ms-teams -ErrorAction SilentlyContinue
+
+    if ($null -ne $TeamsProcess) {
+        Write-Host "Microsoft Teams process is running."
+        
+        $latestLogFile = Get-LatestLogFile
+        if ($latestLogFile -ne $null) {
+            $latestAvailabilityEntry = Find-LatestAvailability -logFilePath $latestLogFile
+            if ($latestAvailabilityEntry -ne $null) {
+                Write-Host $latestAvailabilityEntry
+            } else {
+                Write-Host "No availability entry found in the log file."
+            }
+
+            $latestActivityEntry = Find-LatestActivity -logFilePath $latestLogFile
+            if ($latestActivityEntry -ne $null) {
+                Write-Host $latestActivityEntry
+            } else {
+                Write-Host "No activity entry found in the log file."
+            }
+
+            Set-ActivityIcon
+        } else {
+            Write-Host "No log file found."
+        }
+    } else {
+        Write-Host "Microsoft Teams process is not running."
+        $script:currentAvailability = "Offline"
+        $script:currentActivity = "Inactive"
+        $script:ActivityIcon = $iconNotInACall
+        Write-Host "Availability set to: $script:currentAvailability"
+        Write-Host "Activity set to: $script:currentActivity"
+    }
+
+    Send-LatestActivity
+    Start-Sleep -Seconds $refreshDelay
+}
