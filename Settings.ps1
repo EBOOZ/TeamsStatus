@@ -1,7 +1,7 @@
 # Configure the variables below that will be used in the script
-$HAToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhYTgwNWQxYjZjNzA0NGUzYTFlNGI1OThjM2U5NmQ5OCIsImlhdCI6MTcxODM4NzkxMSwiZXhwIjoyMDMzNzQ3OTExfQ.azOQffUALX50S8Jqzm6ZTdBzYLEtOksyRADXkE_W0tw" # Example: eyJ0eXAiOiJKV1...
-$UserName = "rmclella" # When not sure, open a command prompt and type: echo %USERNAME%
-$HAUrl = "http://192.168.1.16:8123" # Example: https://yourha.duckdns.org
+$HAToken = "" # Example: eyJ0eXAiOiJKV1...
+$UserName = "" # When not sure, open a command prompt and type: echo %USERNAME%
+$HAUrl = "" # Example: https://yourha.duckdns.org
 # Define the path to the Microsoft Teams log directory
 $logDirPath = "$env:UserProfile\AppData\Local\Packages\MSTeams_8wekyb3d8bbwe\LocalCache\Microsoft\MSTeams\Logs"
 $refreshDelay = 5
