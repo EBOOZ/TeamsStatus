@@ -54,6 +54,6 @@ Start-Service -Name "Microsoft Teams Status Monitor"
 After completing the steps below, start your Teams client and verify if the status and activity is updated as expected.
 
 # Known issues:
-* Currently there is a delay between status changes and the update being written to the log due to MS Teams memory caching
-* Switching back and forth between the Available status (this is a logic issue I need to find)
-* Not currently tracking all Activity Levels
+* Currently there is a delay between status changes and the update being written to the log due to MS Teams memory caching.  Note: I've refined this as much as possible but there is not much that can be done due to the application design.
+* ~~Switching back and forth between the Available status (this is a logic issue I need to find)~~
+* ~~Not currently tracking all Activity Levels~~
