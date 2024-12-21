@@ -1,5 +1,5 @@
 > [!NOTE]
-> This solution only works for the legacy version of Microsoft Teams. The new version does not contain a logs.txt file which can be read by the script. Therefor this repository is not maintained anymore.
+> This solution only works for the new version of Microsoft Teams.
 
 # Introduction
 We're working a lot at our home office these days. Several people already found inventive solutions to make working in the home office more comfortable. One of these ways is to automate activities in your home automatation system based on your status on Microsoft Teams.
@@ -16,7 +16,7 @@ sensor.teams_status displays that availability status of your Teams client based
 This solution is created to work with Home Assistant. It will work with any home automation platform that provides an API, but you probably need to change the PowerShell code.
 
 # Requirements
-* Create the three Teams sensors in the Home Assistant configuration.yaml file
+* Create the two Teams sensors in the Home Assistant configuration.yaml file
 ```yaml
 input_text:
   teams_status:
@@ -40,7 +40,7 @@ sensor:
         unique_id: sensor.teams_activity
 
 ```
-* Generate a Long-lived access token ([see HA documentation](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token))
+* Generate a Long-lived access token via `https://<HA URL>/profile/security` ([see HA documentation](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token))
 * Copy and temporarily save the token somewhere you can find it later
 * Restart Home Assistant to have the new sensors added
 * Download the files from this repository and save them to C:\Scripts
