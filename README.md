@@ -26,6 +26,7 @@ sensor:
         unique_id: sensor.teams_status
       teams_activity:
         friendly_name: "Microsoft Teams activity"
+        unique_id: sensor.teams_activity
 ```
 * Generate a Long-lived access token via `https://<HA URL>/profile/security` ([see HA documentation](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token))
 * Copy and temporarily save the token somewhere you can find it later
