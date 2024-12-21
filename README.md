@@ -18,27 +18,14 @@ This solution is created to work with Home Assistant. It will work with any home
 # Requirements
 * Create the two Teams sensors in the Home Assistant configuration.yaml file
 ```yaml
-input_text:
-  teams_status:
-    name: Microsoft Teams status
-    icon: mdi:microsoft-teams
-  teams_activity:
-    name: Microsoft Teams activity
-    icon: mdi:phone-off
-
 sensor:
   - platform: template
     sensors:
       teams_status: 
         friendly_name: "Microsoft Teams status"
-        value_template: "{{states('input_text.teams_status')}}"
-        icon_template: "{{state_attr('input_text.teams_status','icon')}}"
         unique_id: sensor.teams_status
       teams_activity:
         friendly_name: "Microsoft Teams activity"
-        value_template: "{{states('input_text.teams_activity')}}"
-        unique_id: sensor.teams_activity
-
 ```
 * Generate a Long-lived access token via `https://<HA URL>/profile/security` ([see HA documentation](https://developers.home-assistant.io/docs/auth_api/#long-lived-access-token))
 * Copy and temporarily save the token somewhere you can find it later
