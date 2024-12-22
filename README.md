@@ -1,5 +1,5 @@
 > [!NOTE]
-> This solution only works for the new version of Microsoft Teams. You may want to consider ([Get-MonitorStatus](https://github.com/EBOOZ/Get-MonitorStatus)) in combination with this script as well.
+> This solution only works for the new version of Microsoft Teams. You may want to consider [Get-MonitorStatus](https://github.com/EBOOZ/Get-MonitorStatus) in combination with this script as well.
 
 # Introduction
 We're working a lot at our home office these days. Several people already found solutions to make working in the home office more comfortable. One of these ways is to automate activities in your home automatation system based on your status on Microsoft Teams.
