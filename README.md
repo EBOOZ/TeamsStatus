@@ -2,7 +2,7 @@
 > This solution only works for the new version of Microsoft Teams.
 
 # Introduction
-We're working a lot at our home office these days. Several people already found inventive solutions to make working in the home office more comfortable. One of these ways is to automate activities in your home automatation system based on your status on Microsoft Teams.
+We're working a lot at our home office these days. Several people already found solutions to make working in the home office more comfortable. One of these ways is to automate activities in your home automatation system based on your status on Microsoft Teams.
 
 Microsoft provides the status of your account that is used in Teams via the Graph API. To access the Graph API, your organization needs to grant consent for the organization so everybody can read their Teams status. Since my organization didn't want to grant consent, I needed to find a workaround, which I found in monitoring the Teams client logfile for certain changes.
 
@@ -10,7 +10,7 @@ This script makes use of two sensors that are created in Home Assistant up front
 * sensor.teams_status
 * sensor.teams_activity
 
-sensor.teams_status displays that availability status of your Teams client based on the icon overlay in the taskbar on Windows. sensor.teams_activity shows if you are in a call or not based on the App updates deamon, which is paused as soon as you join a call.
+`sensor.teams_status` displays that availability status of your Teams client based on the icon overlay in the taskbar on Windows. `sensor.teams_activity` shows if you are in a call or not.
 
 # Important
 This solution is created to work with Home Assistant. It will work with any home automation platform that provides an API, but you probably need to change the PowerShell code.
@@ -42,7 +42,7 @@ sensor:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
 Unblock-File .\Settings.ps1
 Unblock-File .\Get-TeamsStatus.ps1
-Start-Process -FilePath .\nssm.exe -ArgumentList 'install "Microsoft Teams Status Monitor" "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" "-command "& { . C:\Scripts\Get-TeamsStatus.ps1 }"" ' -NoNewWindow -Wait
+Start-Process -FilePath .\nssm.exe -ArgumentList 'install "Microsoft Teams Status Monitor" "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" "-command "& { . C:\Scripts\TeamsStatus\Get-TeamsStatus.ps1 }"" ' -NoNewWindow -Wait
 Start-Service -Name "Microsoft Teams Status Monitor"
 ```
 
