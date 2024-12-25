@@ -68,7 +68,7 @@ $TeamsActivity = $MSTeamsLog | Select-String -Pattern `
   'NotifyCallEnded' | Select-Object -Last 1
 
 # Get Teams application process
-$TeamsProcess = Get-Process -Name ms-teams -ErrorAction Break
+$TeamsProcess = Get-Process -Name ms-teams -ErrorAction SilentlyContinue
 
 # Check if Teams is running and start monitoring the log if it is
 If ($null -ne $TeamsProcess) {
