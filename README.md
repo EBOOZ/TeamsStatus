@@ -12,8 +12,8 @@ This script makes use of two sensors that are created in Home Assistant up front
 
 `sensor.teams_status` displays that availability status of your Teams client based on the icon overlay in the taskbar on Windows. `sensor.teams_activity` shows if you are in a call or not.
 
-# Important
-This solution is created to work with Home Assistant. It will work with any home automation platform that provides an API, but you probably need to change the PowerShell code.
+> [!IMPORTANT]
+> This solution is created to work with Home Assistant. It will work with any home automation platform that provides an API, but you probably need to change the PowerShell code.
 
 # Requirements
 * Create the two Teams sensors in the Home Assistant configuration.yaml file
