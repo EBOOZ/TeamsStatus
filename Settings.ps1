@@ -16,10 +16,12 @@ $lgInAMeeting = "In a meeting"
 $lgOffline = "Offline"
 $lgNotInACall = "Not in a call"
 $lgInACall = "In a call"
+$lgIncomingCall = "Incoming call"
 
 # Set icons to use for call activity
 $iconInACall = "mdi:phone-in-talk-outline"
 $iconNotInACall = "mdi:phone-off"
+$iconIncomingCall = "mdi:phone-ring"
 
 # Set entities to post to
 $entityStatus = "sensor.teams_status"

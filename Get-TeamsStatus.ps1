@@ -65,7 +65,8 @@ $TeamsStatus = $MSTeamsLog | Select-String -Pattern `
 $TeamsActivity = $MSTeamsLog | Select-String -Pattern `
   'NotifyCallActive',`
   'NotifyCallAccepted',`
-  'NotifyCallEnded' | Select-Object -Last 1
+  'NotifyCallEnded',`
+  'reportIncomingCall' | Select-Object -Last 1
 
 # Get Teams application process
 $TeamsProcess = Get-Process -Name ms-teams -ErrorAction SilentlyContinue
@@ -111,6 +112,12 @@ If ($null -ne $TeamsProcess) {
     }
 
     If($null -eq $TeamsActivity){ }
+    ElseIf ($TeamsActivity -like "*reportIncomingCall*") {
+        $Activity = $lgIncomingCall
+        $ActivityIcon = $iconIncomingCall
+        Write-Host $Activity
+        Write-Host $ActivityIcon
+    }
     ElseIf ($TeamsActivity -like "*NotifyCallActive*" -or `
         $TeamsActivity -like "*NotifyCallAccepted*") {
         $Activity = $lgInACall
